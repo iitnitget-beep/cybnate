@@ -77,7 +77,7 @@ fun MiniAppWebViewer(
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <style>
                                 body { font-family: sans-serif; background: #0D1117; color: #F3F4F6; padding: 20px; }
-                                .card { background: #161B22; border-radius: 12.dp; padding: 16px; margin-top: 10px; }
+                                .card { background: #161B22; border-radius: 12px; padding: 16px; margin-top: 10px; }
                                 button { background: #3B82F6; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; }
                                 pre { background: #010409; color: #00FF66; padding: 12px; border-radius: 8px; overflow-x: auto; }
                             </style>
