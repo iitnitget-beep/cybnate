@@ -1,42 +1,32 @@
 package ai.cybnate.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 
-private val DarkColorScheme = darkColorScheme(
-    primary = DarkPrimary,
-    secondary = DarkSecondary,
-    background = DarkBackground,
-    surface = DarkSurface,
-    surfaceVariant = DarkSurfaceVariant,
-    onPrimary = DarkOnSurface,
-    onBackground = DarkOnSurface,
-    onSurface = DarkOnSurface,
-    error = DarkError
+private val CybNateColorScheme = darkColorScheme(
+    primary = CybNateCyan,
+    onPrimary = Color.Black,
+    secondary = CybNateNeonGreen,
+    onSecondary = Color.Black,
+    tertiary = CybNatePurple,
+    background = CybNateVoid,
+    onBackground = Color.White,
+    surface = CybNateSurface,
+    onSurface = Color.White,
+    surfaceVariant = CybNateSurfaceVariant,
+    onSurfaceVariant = Color(0xFF94A3B8),
+    outline = CybNateBorder,
+    error = CybNateError
 )
 
 @Composable
 fun CybNateTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        else -> DarkColorScheme
-    }
-
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = CybNateColorScheme,
         typography = Typography,
         content = content
     )

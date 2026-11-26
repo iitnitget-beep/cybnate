@@ -1,6 +1,7 @@
 package ai.cybnate.ui.chat
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -16,8 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ai.cybnate.data.model.ChatMessage
 import ai.cybnate.data.model.MessageRole
-import ai.cybnate.ui.theme.CodeBlockBg
-import ai.cybnate.ui.theme.TerminalGreen
+import ai.cybnate.ui.theme.*
 
 @Composable
 fun MessageBubble(
@@ -36,7 +36,7 @@ fun MessageBubble(
             Text(
                 text = message.modelName,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
+                color = CybNateCyan,
                 modifier = Modifier.padding(start = 12.dp, bottom = 2.dp)
             )
         }
@@ -48,17 +48,27 @@ fun MessageBubble(
                 bottomStart = if (isUser) 16.dp else 4.dp,
                 bottomEnd = if (isUser) 4.dp else 16.dp
             ),
-            color = if (isUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-            modifier = Modifier.widthIn(max = 340.dp)
+            color = if (isUser) CybNateCyan else CybNateSurface,
+            modifier = Modifier
+                .widthIn(max = 350.dp)
+                .border(
+                    width = 1.dp,
+                    color = if (isUser) CybNateCyan else CybNateBorder,
+                    shape = RoundedCornerShape(
+                        topStart = 16.dp,
+                        topEnd = 16.dp,
+                        bottomStart = if (isUser) 16.dp else 4.dp,
+                        bottomEnd = if (isUser) 4.dp else 16.dp
+                    )
+                )
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
-                // If content has code block markdown
                 if (message.content.contains("```")) {
                     FormattedMarkdownContent(message.content, isUser)
                 } else {
                     Text(
-                        text = if (message.isStreaming && message.content.isEmpty()) "Typing..." else message.content,
-                        color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                        text = if (message.isStreaming && message.content.isEmpty()) "Processing query..." else message.content,
+                        color = if (isUser) Color.Black else Color.White,
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -73,27 +83,28 @@ fun FormattedMarkdownContent(content: String, isUser: Boolean) {
 
     parts.forEachIndexed { index, part ->
         if (index % 2 == 1) {
-            // Code Block
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(CodeBlockBg)
-                    .padding(8.dp)
+                    .border(1.dp, CybNateBorder, RoundedCornerShape(8.dp))
+                    .padding(10.dp)
             ) {
                 Text(
                     text = part.trim(),
-                    color = TerminalGreen,
+                    color = CybNateNeonGreen,
                     fontFamily = FontFamily.Monospace,
-                    fontSize = 12.sp
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp
                 )
             }
         } else {
             if (part.isNotBlank()) {
                 Text(
                     text = part,
-                    color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                    color = if (isUser) Color.Black else Color.White,
                     style = MaterialTheme.typography.bodyLarge
                 )
             }

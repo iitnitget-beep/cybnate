@@ -17,11 +17,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ai.cybnate.data.terminal.ShellExecutor
 import ai.cybnate.data.terminal.TerminalSessionManager
+import ai.cybnate.ui.theme.CybNateCyan
 import ai.cybnate.ui.theme.TerminalBackground
 import ai.cybnate.ui.theme.TerminalGreen
 import ai.cybnate.ui.theme.TerminalSurface
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,11 +34,29 @@ fun TerminalScreen(
     val sessions by sessionManager.sessions.collectAsState()
     val activeId by sessionManager.activeSessionId.collectAsState()
 
-    var outputBuffer by remember { mutableStateOf("Welcome to CybNate Terminal\nType commands or use craft-anything-cli\n$ ") }
+    var outputBuffer by remember { mutableStateOf("CybNate PTY Terminal [libtermux.so]\n$ ") }
     var currentInput by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val shellExecutor = remember { ShellExecutor() }
+
+    // Listen to active PTY session output
+    LaunchedEffect(activeId) {
+        activeId?.let { id ->
+            val pty = sessionManager.getPtySession(id)
+            pty?.outputFlow?.collectLatest { chunk ->
+                outputBuffer += chunk
+                if (outputBuffer.lines().size > 1000) {
+                    outputBuffer = outputBuffer.lines().takeLast(800).joinToString("\n")
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(outputBuffer.length) {
+        if (outputBuffer.isNotEmpty()) {
+            listState.animateScrollToItem(outputBuffer.lines().size.coerceAtLeast(1) - 1)
+        }
+    }
 
     Column(
         modifier = modifier
@@ -58,7 +77,7 @@ fun TerminalScreen(
                     onClick = { sessionManager.switchSession(session.id) },
                     text = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(session.title, fontSize = 13.sp)
+                            Text(session.title, fontSize = 12.sp, color = if (session.id == activeId) CybNateCyan else Color.Gray)
                             if (sessions.size > 1) {
                                 Spacer(modifier = Modifier.width(4.dp))
                                 IconButton(
@@ -73,7 +92,7 @@ fun TerminalScreen(
                 )
             }
             IconButton(onClick = { sessionManager.createSession() }) {
-                Icon(Icons.Default.Add, contentDescription = "New Tab", tint = MaterialTheme.colorScheme.primary)
+                Icon(Icons.Default.Add, contentDescription = "New Tab", tint = CybNateCyan)
             }
         }
 
@@ -93,8 +112,8 @@ fun TerminalScreen(
                         text = line,
                         color = TerminalGreen,
                         fontFamily = FontFamily.Monospace,
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp
                     )
                 }
             }
@@ -103,10 +122,20 @@ fun TerminalScreen(
         // Virtual Keyboard Quick Bar
         VirtualKeyboardRow(
             onKeyPress = { key ->
-                currentInput += when (key) {
-                    "TAB" -> "\t"
-                    "ESC" -> ""
-                    else -> key
+                activeId?.let { id ->
+                    val pty = sessionManager.getPtySession(id)
+                    when (key) {
+                        "ESC" -> pty?.write("\u001b")
+                        "TAB" -> pty?.write("\t")
+                        "CTRL" -> {}
+                        "↑" -> pty?.write("\u001b[A")
+                        "↓" -> pty?.write("\u001b[B")
+                        "→" -> pty?.write("\u001b[C")
+                        "←" -> pty?.write("\u001b[D")
+                        else -> {
+                            currentInput += key
+                        }
+                    }
                 }
             }
         )
@@ -124,7 +153,7 @@ fun TerminalScreen(
             ) {
                 Text(
                     text = "$ ",
-                    color = TerminalGreen,
+                    color = CybNateCyan,
                     fontFamily = FontFamily.Monospace,
                     fontSize = 14.sp
                 )
@@ -132,7 +161,7 @@ fun TerminalScreen(
                 TextField(
                     value = currentInput,
                     onValueChange = { currentInput = it },
-                    placeholder = { Text("type command...", color = Color.Gray, fontSize = 13.sp) },
+                    placeholder = { Text("type command or press Run...", color = Color.Gray, fontSize = 13.sp) },
                     modifier = Modifier.weight(1f),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
@@ -149,22 +178,19 @@ fun TerminalScreen(
                     onClick = {
                         val cmd = currentInput.trim()
                         if (cmd.isNotEmpty()) {
-                            outputBuffer += "$cmd\n"
-                            currentInput = ""
-
-                            scope.launch {
-                                shellExecutor.executeStream(cmd).collect { chunk ->
-                                    outputBuffer += chunk
-                                }
-                                outputBuffer += "$ "
+                            activeId?.let { id ->
+                                val pty = sessionManager.getPtySession(id)
+                                pty?.write("$cmd\n")
                             }
+                            currentInput = ""
                         }
                     },
                     shape = RoundedCornerShape(6.dp),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                    modifier = Modifier.height(36.dp)
+                    colors = ButtonDefaults.buttonColors(containerColor = CybNateCyan),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp),
+                    modifier = Modifier.height(34.dp)
                 ) {
-                    Text("Run", fontSize = 12.sp)
+                    Text("Run", color = Color.Black, fontSize = 12.sp)
                 }
             }
         }

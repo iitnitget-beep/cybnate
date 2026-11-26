@@ -5,6 +5,15 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="#0D1117"
+        android:fillColor="#04060A"
         android:pathData="M0,0h108v108h-108z" />
+    <!-- Cyber circuit accents -->
+    <path
+        android:strokeColor="#1E293B"
+        android:strokeWidth="1"
+        android:pathData="M18,18 L90,18 M18,90 L90,90 M18,18 L18,90 M90,18 L90,90" />
+    <path
+        android:strokeColor="#0E1726"
+        android:strokeWidth="1.5"
+        android:pathData="M0,54 L108,54 M54,0 L54,108" />
 </vector>

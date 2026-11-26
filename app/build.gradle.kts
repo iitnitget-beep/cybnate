@@ -45,6 +45,11 @@ android {
     buildFeatures {
         compose = true
     }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 dependencies {
@@ -69,6 +74,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.okhttp)
     implementation(libs.okhttp.sse)
+    implementation(libs.tukaani.xz)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
