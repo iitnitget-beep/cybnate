@@ -120,12 +120,15 @@ class BootstrapManager(private val context: Context) {
         }
     }
 
-    private fun unzipArchive(zipFile: File, onEntry: (String) -> Unit) {
+    private suspend fun unzipArchive(zipFile: File, onEntry: suspend (String) -> Unit) {
         ZipInputStream(zipFile.inputStream().buffered()).use { zis ->
             var entry = zis.nextEntry
+            var count = 0
             while (entry != null) {
                 val file = File(filesDir, entry.name)
-                onEntry(entry.name)
+                if (count++ % 100 == 0) {
+                    onEntry(entry.name)
+                }
                 if (entry.isDirectory) {
                     file.mkdirs()
                 } else {
